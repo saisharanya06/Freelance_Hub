@@ -18,7 +18,7 @@ import {
 } from "../features/projects/projectSlice";
 import Navbar from "../components/Navbar";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
+// import { format } from "date-fns";
 
 const ProjectDetails = () => {
   const { id } = useParams();
