@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000/auth";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/auth`;
 
-/* ------------------ THUNKS ------------------ */
+/* ================== THUNKS ================== */
 
 // ✅ LOGIN
 export const loginUser = createAsyncThunk(
@@ -13,32 +13,36 @@ export const loginUser = createAsyncThunk(
       const res = await axios.post(`${API_URL}/login`, credentials);
       return res.data; // { success, user }
     } catch (err) {
-      return rejectWithValue(err.response?.data?.detail || "Login failed");
+      return rejectWithValue(
+        err.response?.data?.detail || "Login failed, try again"
+      );
     }
   }
 );
 
 // ✅ SIGNUP
 export const signupUser = createAsyncThunk(
-  "auth/signup",
+  "auth/signupUser",
   async (formData, { rejectWithValue }) => {
     try {
       const res = await axios.post(`${API_URL}/signup`, formData);
       return res.data; // { success, user }
     } catch (err) {
-      return rejectWithValue(err.response?.data?.detail || "Signup failed");
+      return rejectWithValue(
+        err.response?.data?.detail || "Signup failed, try again"
+      );
     }
   }
 );
 
-/* ------------------ SLICE ------------------ */
+/* ================== SLICE ================== */
 
 const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,
     isAuthenticated: false,
-    status: "idle",
+    status: "idle", // idle | loading | succeeded | failed
     error: null,
   },
   reducers: {
@@ -54,12 +58,12 @@ const authSlice = createSlice({
       // LOGIN
       .addCase(loginUser.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
         state.isAuthenticated = true;
-        state.error = null;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
@@ -69,12 +73,12 @@ const authSlice = createSlice({
       // SIGNUP
       .addCase(signupUser.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(signupUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
         state.isAuthenticated = true;
-        state.error = null;
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.status = "failed";

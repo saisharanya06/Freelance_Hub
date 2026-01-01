@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, IndianRupee, Clock } from "lucide-react";
-// import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 export default function ProjectCard({ project, index = 0 }) {
   const formatBudget = (budget) => {
