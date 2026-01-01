@@ -1,0 +1,1 @@
+# FastAPI Freelance Marketplace App
