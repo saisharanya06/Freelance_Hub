@@ -1,11 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import API_BASE_URL from "../../config/api";
 
-const API_URL = "http://127.0.0.1:8000/projects";
+/* ===================== API ===================== */
+
+const API_URL = `${API_BASE_URL}/projects`;
 
 /* ===================== THUNKS ===================== */
 
-// FETCH PROJECTS
+// 🔹 FETCH PROJECTS
 export const fetchProjects = createAsyncThunk(
   "projects/fetchProjects",
   async (_, { rejectWithValue }) => {
@@ -18,7 +21,7 @@ export const fetchProjects = createAsyncThunk(
   }
 );
 
-// CREATE PROJECT
+// 🔹 CREATE PROJECT
 export const createProject = createAsyncThunk(
   "projects/createProject",
   async (project, { rejectWithValue }) => {
@@ -35,7 +38,7 @@ export const createProject = createAsyncThunk(
   }
 );
 
-// UPDATE PROJECT
+// 🔹 UPDATE PROJECT
 export const updateProject = createAsyncThunk(
   "projects/updateProject",
   async ({ id, data }, { rejectWithValue }) => {
@@ -48,7 +51,7 @@ export const updateProject = createAsyncThunk(
   }
 );
 
-// DELETE PROJECT
+// 🔹 DELETE PROJECT
 export const deleteProject = createAsyncThunk(
   "projects/deleteProject",
   async (id, { rejectWithValue }) => {
@@ -61,13 +64,13 @@ export const deleteProject = createAsyncThunk(
   }
 );
 
-// ✅ MARK AS COMPLETED (ONLY ONE THUNK — IMPORTANT)
+// 🔹 MARK AS COMPLETED
 export const markAsCompleted = createAsyncThunk(
   "projects/markAsCompleted",
   async (projectId, { rejectWithValue }) => {
     try {
       await axios.patch(`${API_URL}/${projectId}/complete`);
-      return projectId; // 👈 ONLY projectId returned
+      return projectId;
     } catch (err) {
       return rejectWithValue(
         err.response?.data || "Failed to mark project as completed"
@@ -128,12 +131,14 @@ const projectSlice = createSlice({
       /* ---------- UPDATE ---------- */
       .addCase(updateProject.fulfilled, (state, action) => {
         const { id, data } = action.payload;
+
         const project = state.projects.find(
           (p) => p.id === id || p._id === id
         );
         if (project) {
           Object.assign(project, data);
         }
+
         if (
           state.currentProject &&
           (state.currentProject.id === id ||
@@ -148,6 +153,7 @@ const projectSlice = createSlice({
         state.projects = state.projects.filter(
           (p) => p.id !== action.payload && p._id !== action.payload
         );
+
         if (
           state.currentProject &&
           (state.currentProject.id === action.payload ||
@@ -157,7 +163,7 @@ const projectSlice = createSlice({
         }
       })
 
-      /* ---------- MARK AS COMPLETED (🔥 CORE FIX) ---------- */
+      /* ---------- MARK AS COMPLETED ---------- */
       .addCase(markAsCompleted.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -167,7 +173,6 @@ const projectSlice = createSlice({
 
         const projectId = action.payload;
 
-        // ✅ Update ONLY that project in list
         const project = state.projects.find(
           (p) => p.id === projectId || p._id === projectId
         );
@@ -175,7 +180,6 @@ const projectSlice = createSlice({
           project.status = "COMPLETED";
         }
 
-        // ✅ Update ONLY currentProject if it matches
         if (
           state.currentProject &&
           (state.currentProject.id === projectId ||
@@ -184,7 +188,6 @@ const projectSlice = createSlice({
           state.currentProject.status = "COMPLETED";
         }
       })
-      
       .addCase(markAsCompleted.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
