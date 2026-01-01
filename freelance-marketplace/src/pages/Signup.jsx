@@ -17,21 +17,13 @@ export default function Signup() {
   });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ✅ FIXED SUBMIT HANDLER
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !formData.password.trim()
-    ) {
+    if (!formData.name || !formData.email || !formData.password) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -46,40 +38,54 @@ export default function Signup() {
       return;
     }
 
-    const payload = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-    };
-
-    const result = await dispatch(signupUser(payload));
+    const result = await dispatch(
+      signupUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      })
+    );
 
     if (result.meta.requestStatus === "fulfilled") {
       toast.success("Signup successful. Please login.");
-      navigate("/login"); // ✅ force login
+      navigate("/login");
     } else {
       toast.error("Signup failed. Try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center px-4 py-12">
+    <div
+      className="
+        min-h-screen flex items-center justify-center px-4
+        bg-gray-100 dark:bg-gray-950
+        transition-colors duration-300
+      "
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
-          <h1 className="text-3xl font-bold text-center mb-2 text-gray-900 dark:text-white">
+        <div
+          className="
+            bg-white dark:bg-gray-900
+            border border-gray-200 dark:border-gray-800
+            rounded-2xl shadow-2xl p-8
+          "
+        >
+          <h1 className="text-3xl font-bold text-center mb-2 text-gray-900 dark:text-gray-100">
             Create Account
           </h1>
+
           <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
             Join FreelanceHub today
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Full Name
               </label>
               <input
@@ -87,13 +93,19 @@ export default function Signup() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border"
-                required
+                className="
+                  w-full px-4 py-3 rounded-lg
+                  bg-white dark:bg-gray-800
+                  border border-gray-300 dark:border-gray-700
+                  text-gray-900 dark:text-gray-100
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                "
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Email Address
               </label>
               <input
@@ -101,13 +113,19 @@ export default function Signup() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border"
-                required
+                className="
+                  w-full px-4 py-3 rounded-lg
+                  bg-white dark:bg-gray-800
+                  border border-gray-300 dark:border-gray-700
+                  text-gray-900 dark:text-gray-100
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                "
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <input
@@ -115,13 +133,19 @@ export default function Signup() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border"
-                required
+                className="
+                  w-full px-4 py-3 rounded-lg
+                  bg-white dark:bg-gray-800
+                  border border-gray-300 dark:border-gray-700
+                  text-gray-900 dark:text-gray-100
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                "
               />
             </div>
 
+            {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Confirm Password
               </label>
               <input
@@ -129,16 +153,26 @@ export default function Signup() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border"
-                required
+                className="
+                  w-full px-4 py-3 rounded-lg
+                  bg-white dark:bg-gray-800
+                  border border-gray-300 dark:border-gray-700
+                  text-gray-900 dark:text-gray-100
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500
+                "
               />
             </div>
 
+            {/* Submit */}
             <motion.button
               type="submit"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg"
+              className="
+                w-full py-3 rounded-lg font-semibold text-white
+                bg-indigo-600 hover:bg-indigo-700
+                transition
+              "
             >
               Create Account
             </motion.button>
@@ -148,7 +182,7 @@ export default function Signup() {
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-indigo-600 font-semibold hover:underline"
+              className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
             >
               Sign in
             </Link>
