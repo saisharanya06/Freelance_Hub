@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/auth/authSlice";
 import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function Login() {
@@ -10,6 +11,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // 👁️ added
 
   const { status, error, isAuthenticated } = useSelector(
     (state) => state.auth
@@ -39,6 +41,7 @@ export default function Login() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email */}
           <input
             type="email"
             placeholder="Email"
@@ -48,14 +51,24 @@ export default function Login() {
             required
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-white p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
+          {/* Password with eye icon */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-700 text-gray-900 dark:text-white p-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 dark:text-gray-400"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </span>
+          </div>
 
           <button
             type="submit"

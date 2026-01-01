@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Eye, EyeOff } from "lucide-react";
 import { signupUser } from "../features/auth/authSlice";
 import toast from "react-hot-toast";
 
@@ -16,6 +17,17 @@ export default function Signup() {
     confirmPassword: "",
   });
 
+  // 👁️ show / hide states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // 🔐 strong password validation
+  const validatePassword = (password) => {
+    const regex =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -28,13 +40,15 @@ export default function Signup() {
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
+    if (!validatePassword(formData.password)) {
+      toast.error(
+        "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character"
+      );
       return;
     }
 
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -124,12 +138,12 @@ export default function Signup() {
             </div>
 
             {/* Password */}
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -141,15 +155,21 @@ export default function Signup() {
                   focus:outline-none focus:ring-2 focus:ring-indigo-500
                 "
               />
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-11 cursor-pointer text-gray-500"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </span>
             </div>
 
             {/* Confirm Password */}
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Confirm Password
               </label>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
@@ -161,6 +181,18 @@ export default function Signup() {
                   focus:outline-none focus:ring-2 focus:ring-indigo-500
                 "
               />
+              <span
+                onClick={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
+                className="absolute right-4 top-11 cursor-pointer text-gray-500"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </span>
             </div>
 
             {/* Submit */}
