@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, IndianRupee, Clock } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 
 export default function ProjectCard({ project, index = 0 }) {
   const formatBudget = (budget) => {
@@ -76,15 +75,6 @@ export default function ProjectCard({ project, index = 0 }) {
             <IndianRupee className="w-4 h-4" />
             {formatBudget(project.budget)}
           </div>
-
-          {/* {project.created_at && (
-            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-              <Clock className="w-3 h-3" />
-              {formatDistanceToNow(new Date(project.created_at), {
-                addSuffix: true,
-              })}
-            </div>
-          )} */}
         </div>
 
         <Link

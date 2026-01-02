@@ -4,12 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   IndianRupee,
-  Clock,
   Calendar,
   CheckCircle2,
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import { format } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProjects,
@@ -18,7 +18,6 @@ import {
 } from "../features/projects/projectSlice";
 import Navbar from "../components/Navbar";
 import toast from "react-hot-toast";
-// import { format } from "date-fns";
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -49,7 +48,7 @@ const ProjectDetails = () => {
     }
   }, [dispatch, id, projects]);
 
-  /* ---------- MARK AS COMPLETED (AUTH CHECK) ---------- */
+  /* ---------- MARK AS COMPLETED ---------- */
   const handleMarkCompleted = async () => {
     if (!isAuthenticated) {
       toast.error("Please login to mark project as completed");
@@ -119,7 +118,6 @@ const ProjectDetails = () => {
               rounded-xl border overflow-hidden
               bg-white dark:bg-gray-800
               border-gray-200 dark:border-gray-700
-              transition-colors duration-300
             "
           >
             {/* Header */}
@@ -133,10 +131,6 @@ const ProjectDetails = () => {
                     <span className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       {format(new Date(project.created_at), "MMM d, yyyy")}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {format(new Date(project.created_at), "h:mm a")}
                     </span>
                   </div>
                 </div>
@@ -219,7 +213,6 @@ const ProjectDetails = () => {
                       className="
                         flex items-center gap-2 px-6 py-3 rounded-xl font-semibold
                         bg-indigo-600 text-white hover:bg-indigo-700
-                        transition
                       "
                     >
                       {status === "loading" ? (

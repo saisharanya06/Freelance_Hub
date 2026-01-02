@@ -20,9 +20,11 @@ export default function Navbar({ theme, setTheme }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); 
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
 
@@ -33,13 +35,14 @@ export default function Navbar({ theme, setTheme }) {
   const handleLogout = () => {
     dispatch(logoutUser());
     toast.success("Logged out");
+    setProfileOpen(false);
     navigate("/");
   };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        
+
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center">
@@ -54,11 +57,10 @@ export default function Navbar({ theme, setTheme }) {
         <div className="hidden md:flex items-center gap-3">
           <Link
             to="/projects"
-            className={`px-3 py-2 rounded-lg text-sm transition ${
-              isActive("/projects")
+            className={`px-3 py-2 rounded-lg text-sm transition ${isActive("/projects")
                 ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-            }`}
+              }`}
           >
             Projects
           </Link>
@@ -66,11 +68,10 @@ export default function Navbar({ theme, setTheme }) {
           {isAuthenticated && (
             <Link
               to="/post"
-              className={`px-3 py-2 rounded-lg text-sm transition ${
-                isActive("/post")
+              className={`px-3 py-2 rounded-lg text-sm transition ${isActive("/post")
                   ? "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300"
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-              }`}
+                }`}
             >
               <Plus className="inline w-4 h-4 mr-1" />
               Post Project
@@ -81,7 +82,6 @@ export default function Navbar({ theme, setTheme }) {
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            aria-label="Toggle theme"
           >
             {theme === "light" ? (
               <Moon className="w-5 h-5 text-gray-700" />
@@ -90,6 +90,7 @@ export default function Navbar({ theme, setTheme }) {
             )}
           </button>
 
+          {/* AUTH */}
           {!isAuthenticated ? (
             <Link
               to="/login"
@@ -99,20 +100,37 @@ export default function Navbar({ theme, setTheme }) {
               Sign In
             </Link>
           ) : (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">
+            <div className="relative">
+              {/* Profile Button */}
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800"
+              >
                 <User className="w-4 h-4" />
                 <span className="text-sm font-medium">
                   {user?.name}
                 </span>
-              </div>
-
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-              >
-                <LogOut className="w-4 h-4" />
               </button>
+
+              {/* Dropdown */}
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-64 rounded-xl shadow-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 z-50">
+                  <div className="px-4 py-3 border-b dark:border-gray-700">
+                    <p className="font-semibold">{user?.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -128,7 +146,35 @@ export default function Navbar({ theme, setTheme }) {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 py-4 space-y-3 transition-colors duration-300">
+        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-4 py-4 space-y-4">
+
+          {/* PROFILE TOGGLE */}
+          {isAuthenticated && (
+            <div>
+              <button
+                onClick={() => setMobileProfileOpen(!mobileProfileOpen)}
+                className="w-full flex items-center justify-between text-gray-800 dark:text-gray-100 font-medium"
+              >
+                <span>Profile</span>
+                <span className="text-lg">
+                  {mobileProfileOpen ? "▾" : "▸"}
+                </span>
+              </button>
+
+              {mobileProfileOpen && (
+                <div className="mt-2 pl-2">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
+                    {user?.name}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {user?.email}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Links */}
           <Link
             to="/projects"
             onClick={() => setIsOpen(false)}
@@ -147,6 +193,7 @@ export default function Navbar({ theme, setTheme }) {
             </Link>
           )}
 
+          {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
             className="flex items-center gap-2 text-gray-700 dark:text-gray-300"
@@ -155,6 +202,7 @@ export default function Navbar({ theme, setTheme }) {
             Toggle Theme
           </button>
 
+          {/* Auth */}
           {!isAuthenticated ? (
             <Link
               to="/login"
@@ -165,8 +213,11 @@ export default function Navbar({ theme, setTheme }) {
             </Link>
           ) : (
             <button
-              onClick={handleLogout}
-              className="block text-red-600"
+              onClick={() => {
+                handleLogout();
+                setIsOpen(false);
+              }}
+              className="block text-red-600 font-medium"
             >
               Sign Out
             </button>

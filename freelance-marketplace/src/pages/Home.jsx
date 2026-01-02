@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProjects } from "../features/projects/projectSlice";
 import { Briefcase, Globe, TrendingUp } from "lucide-react";
-
+import { format } from "date-fns";
 import ProjectCard from "../components/ProjectCard";
 
 export default function Home() {
