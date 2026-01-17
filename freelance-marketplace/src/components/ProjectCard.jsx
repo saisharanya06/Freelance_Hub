@@ -1,12 +1,35 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, IndianRupee, Clock } from "lucide-react";
+import { ArrowRight, IndianRupee, Clock, Edit2, Trash2, CheckCircle2 } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteProject } from "../features/projects/projectSlice";
+import toast from "react-hot-toast";
 
 export default function ProjectCard({ project, index = 0 }) {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const userId = user?.id || user?._id;
+  
+  const isOwner = userId && project.created_by === userId;
+  const isCompletedByMe = project?.isCompleted;
+
   const formatBudget = (budget) => {
     if (!budget) return "—";
     if (budget >= 100000) return `${(budget / 100000).toFixed(1)}L`;
     return `${Math.round(budget / 1000)}K`;
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this project?")) {
+      return;
+    }
+    
+    try {
+      await dispatch(deleteProject(project.id)).unwrap();
+      toast.success("Project deleted successfully");
+    } catch (err) {
+      toast.error(err || "Failed to delete project");
+    }
   };
 
   return (
@@ -26,8 +49,11 @@ export default function ProjectCard({ project, index = 0 }) {
     >
       {/* Header */}
       <div className="flex justify-between items-start mb-3">
-        <h3 className="text-lg font-semibold line-clamp-2 text-gray-900 dark:text-gray-100">
+        <h3 className="text-lg font-semibold line-clamp-2 text-gray-900 dark:text-gray-100 flex items-center gap-2">
           {project.title}
+          {isCompletedByMe && (
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" title="You completed this project" />
+          )}
         </h3>
 
         <span
@@ -77,12 +103,33 @@ export default function ProjectCard({ project, index = 0 }) {
           </div>
         </div>
 
-        <Link
-          to={`/projects/${project.id}`}
-          className="text-indigo-600 dark:text-indigo-400 text-sm font-medium flex items-center gap-1 hover:underline"
-        >
-          View <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {isOwner && (
+            <>
+              <Link
+                to={`/projects/${project.id}/edit`}
+                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-lg transition"
+                title="Edit project"
+              >
+                <Edit2 className="w-4 h-4" />
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="p-2 text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                title="Delete project"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </>
+          )}
+
+          <Link
+            to={`/projects/${project.id}`}
+            className="text-indigo-600 dark:text-indigo-400 text-sm font-medium flex items-center gap-1 hover:underline"
+          >
+            View <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
     </motion.div>
   );

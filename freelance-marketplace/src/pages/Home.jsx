@@ -10,10 +10,12 @@ import ProjectCard from "../components/ProjectCard";
 export default function Home() {
   const dispatch = useDispatch();
   const { projects } = useSelector((state) => state.projects);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
+    // Fetch projects on mount (works for both authenticated and unauthenticated users)
     dispatch(fetchProjects());
-  }, [dispatch]);
+  }, [dispatch, isAuthenticated]); // Re-fetch when auth status changes
 
   const featuredProjects = projects.slice(0, 3);
 

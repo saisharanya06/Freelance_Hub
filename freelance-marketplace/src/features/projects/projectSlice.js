@@ -1,79 +1,80 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import API_BASE_URL from "../../config/api";
+import api from "../../config/api";
 
-/* ===================== API ===================== */
-
-const API_URL = `${API_BASE_URL}/projects`;
+const API_URL = "/projects";
 
 /* ===================== THUNKS ===================== */
 
-// 🔹 FETCH PROJECTS
+// FETCH PROJECTS (PUBLIC)
 export const fetchProjects = createAsyncThunk(
   "projects/fetchProjects",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get(API_URL);
-      return res.data;
-    } catch (err) {
-      return rejectWithValue("Failed to fetch projects");
-    }
-  }
-);
-
-// 🔹 CREATE PROJECT
-export const createProject = createAsyncThunk(
-  "projects/createProject",
-  async (project, { rejectWithValue }) => {
-    try {
-      const res = await axios.post(API_URL, project, {
-        headers: { "Content-Type": "application/json" },
-      });
-      return res.data;
+      const res = await api.get(API_URL);
+      return Array.isArray(res.data) ? res.data : [];
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || "Failed to create project"
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Failed to fetch projects"
       );
     }
   }
 );
 
-// 🔹 UPDATE PROJECT
+// CREATE PROJECT (AUTH)
+export const createProject = createAsyncThunk(
+  "projects/createProject",
+  async (project, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token available:", !!token);
+      console.log("Posting project:", project);
+      const res = await api.post(API_URL, project);
+      console.log("Project created response:", res.data);
+      return res.data;
+    } catch (err) {
+      console.error("Error creating project:", err);
+      const errorMsg =
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to create project";
+      console.error("Error message:", errorMsg);
+      return rejectWithValue(errorMsg);
+    }
+  }
+);
+
+// UPDATE PROJECT (AUTH)
 export const updateProject = createAsyncThunk(
   "projects/updateProject",
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ projectId, data }, { rejectWithValue }) => {
     try {
-      await axios.put(`${API_URL}/${id}`, data);
-      return { id, data };
+      const res = await api.put(`${API_URL}/${projectId}`, data);
+      return res.data;
     } catch (err) {
-      return rejectWithValue("Failed to update project");
+      return rejectWithValue(
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Failed to update project"
+      );
     }
   }
 );
 
-// 🔹 DELETE PROJECT
+// DELETE PROJECT (AUTH)
 export const deleteProject = createAsyncThunk(
   "projects/deleteProject",
-  async (id, { rejectWithValue }) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`);
-      return id;
-    } catch (err) {
-      return rejectWithValue("Failed to delete project");
-    }
-  }
-);
-
-// 🔹 MARK AS COMPLETED
-export const markAsCompleted = createAsyncThunk(
-  "projects/markAsCompleted",
   async (projectId, { rejectWithValue }) => {
     try {
-      await axios.patch(`${API_URL}/${projectId}/complete`);
+      const res = await api.delete(`${API_URL}/${projectId}`);
       return projectId;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data || "Failed to mark project as completed"
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Failed to delete project"
       );
     }
   }
@@ -86,9 +87,10 @@ const projectSlice = createSlice({
   initialState: {
     projects: [],
     currentProject: null,
-    status: "idle", // idle | loading | succeeded | failed
+    status: "idle",
     error: null,
   },
+
   reducers: {
     setCurrentProject: (state, action) => {
       state.currentProject = action.payload;
@@ -96,11 +98,17 @@ const projectSlice = createSlice({
     clearCurrentProject: (state) => {
       state.currentProject = null;
     },
+    resetProjectsState: (state) => {
+      state.projects = [];
+      state.currentProject = null;
+      state.status = "idle";
+      state.error = null;
+    },
   },
+
   extraReducers: (builder) => {
     builder
-
-      /* ---------- FETCH ---------- */
+      // FETCH PROJECTS
       .addCase(fetchProjects.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -114,7 +122,7 @@ const projectSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* ---------- CREATE ---------- */
+      // CREATE PROJECT
       .addCase(createProject.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -128,76 +136,47 @@ const projectSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* ---------- UPDATE ---------- */
-      .addCase(updateProject.fulfilled, (state, action) => {
-        const { id, data } = action.payload;
-
-        const project = state.projects.find(
-          (p) => p.id === id || p._id === id
-        );
-        if (project) {
-          Object.assign(project, data);
-        }
-
-        if (
-          state.currentProject &&
-          (state.currentProject.id === id ||
-            state.currentProject._id === id)
-        ) {
-          Object.assign(state.currentProject, data);
-        }
-      })
-
-      /* ---------- DELETE ---------- */
-      .addCase(deleteProject.fulfilled, (state, action) => {
-        state.projects = state.projects.filter(
-          (p) => p.id !== action.payload && p._id !== action.payload
-        );
-
-        if (
-          state.currentProject &&
-          (state.currentProject.id === action.payload ||
-            state.currentProject._id === action.payload)
-        ) {
-          state.currentProject = null;
-        }
-      })
-
-      /* ---------- MARK AS COMPLETED ---------- */
-      .addCase(markAsCompleted.pending, (state) => {
+      // UPDATE PROJECT
+      .addCase(updateProject.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })
-      .addCase(markAsCompleted.fulfilled, (state, action) => {
+      .addCase(updateProject.fulfilled, (state, action) => {
         state.status = "succeeded";
-
-        const projectId = action.payload;
-
-        const project = state.projects.find(
-          (p) => p.id === projectId || p._id === projectId
+        const index = state.projects.findIndex(
+          (p) => p.id === action.payload.id
         );
-        if (project) {
-          project.status = "COMPLETED";
-        }
-
-        if (
-          state.currentProject &&
-          (state.currentProject.id === projectId ||
-            state.currentProject._id === projectId)
-        ) {
-          state.currentProject.status = "COMPLETED";
+        if (index !== -1) {
+          state.projects[index] = { ...state.projects[index], ...action.payload };
         }
       })
-      .addCase(markAsCompleted.rejected, (state, action) => {
+      .addCase(updateProject.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+
+      // DELETE PROJECT
+      .addCase(deleteProject.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(deleteProject.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.projects = state.projects.filter(
+          (p) => p.id !== action.payload
+        );
+      })
+      .addCase(deleteProject.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });
   },
 });
 
-/* ===================== EXPORTS ===================== */
-
-export const { setCurrentProject, clearCurrentProject } =
-  projectSlice.actions;
+export const {
+  setCurrentProject,
+  clearCurrentProject,
+  resetProjectsState,
+} = projectSlice.actions;
 
 export default projectSlice.reducer;

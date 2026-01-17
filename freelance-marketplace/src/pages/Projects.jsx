@@ -16,13 +16,16 @@ export default function Projects() {
     shallowEqual
   );
 
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedTechs, setSelectedTechs] = useState([]);
 
   useEffect(() => {
+    // Fetch projects on mount (works for both authenticated and unauthenticated users)
     dispatch(fetchProjects());
-  }, [dispatch]);
+  }, [dispatch, isAuthenticated]); // Re-fetch when auth status changes
 
   const allTechStacks = useMemo(() => {
     return Array.from(

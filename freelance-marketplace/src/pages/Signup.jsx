@@ -61,10 +61,11 @@ export default function Signup() {
     );
 
     if (result.meta.requestStatus === "fulfilled") {
-      toast.success("Signup successful. Please login.");
+      toast.success("Account created successfully! Please login.");
       navigate("/login");
     } else {
-      toast.error("Signup failed. Try again.");
+      const errorMsg = result.payload || "Signup failed. Try again.";
+      toast.error(errorMsg);
     }
   };
 

@@ -74,12 +74,21 @@ export default function PostProject() {
     };
 
     try {
-      await dispatch(createProject(payload)).unwrap();
+      const result = await dispatch(createProject(payload)).unwrap();
+      console.log("✅ Project created successfully:", result);
       setIsSuccess(true);
       toast.success("Project posted successfully!");
-      navigate("/projects");
+      // Reset form
+      setFormData({ title: "", description: "", budget: "" });
+      setTechStack([]);
+      // Navigate after a short delay
+      setTimeout(() => navigate("/projects"), 800);
     } catch (error) {
-      toast.error("Failed to post project");
+      console.error("❌ Error posting project:", error);
+      // Only show error if it's a real error, not undefined
+      if (error) {
+        toast.error(typeof error === "string" ? error : "Failed to post project");
+      }
     }
   };
 

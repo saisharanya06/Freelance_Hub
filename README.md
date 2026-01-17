@@ -4,6 +4,9 @@ A modern full-stack freelance marketplace application built with React, Tailwind
 
 ## 🚀 Features
 
+- **User Authentication**: JWT-based authentication with secure login/signup
+- **User-Specific Project Tracking**: Each user has their own completion status for projects
+- **Project Ownership**: Track who created each project
 - **Beautiful UI/UX**: Modern glassmorphism design with gradient backgrounds and smooth animations
 - **Project Management**: Create, view, and manage freelance projects
 - **Real-time Updates**: Redux Toolkit for efficient state management
@@ -14,7 +17,7 @@ A modern full-stack freelance marketplace application built with React, Tailwind
 
 ## 📋 Prerequisites
 
-- Node.js (v18 or higher)
+
 - Python (v3.10 or higher)
 - MongoDB (v4.4 or higher)
 
@@ -35,6 +38,8 @@ A modern full-stack freelance marketplace application built with React, Tailwind
 - **Motor** - Async MongoDB driver
 - **Pydantic** - Data validation
 - **Uvicorn** - ASGI server
+- **PyJWT** - JWT token handling
+- **Passlib** - Password hashing with bcrypt
 
 ## 📦 Installation
 
@@ -113,11 +118,13 @@ venv\Scripts\activate  # Windows
 source venv/bin/activate  # macOS/Linux
 
 # Start the server
-python run.py
+uvicorn app.main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`
 API documentation will be at `http://localhost:8000/docs`
+
+**Note**: On first startup, the application will automatically create required database indexes.
 
 ### Start Frontend Development Server
 
@@ -133,19 +140,51 @@ The application will be available at `http://localhost:5173`
 
 ## 📱 Usage
 
-1. **Home Page**: View the hero section and featured projects
-2. **Browse Projects**: Navigate to the Projects page to see all available projects
-3. **Post a Project**: Use the Post Project form to create a new freelance opportunity
-4. **View Details**: Click on any project card to see full details
-5. **Mark as Completed**: Change project status from the details page
+### First-Time Setup
+1. **Signup**: Create an account with name, email, and password
+2. **Login**: Sign in with your credentials to receive a JWT token
+
+### Working with Projects
+1. **Browse Projects**: View all available projects with your personal completion status
+2. **Post a Project**: Create a new freelance opportunity (requires login)
+3. **View Details**: Click on any project card to see full details
+4. **Mark as Completed**: Mark projects you've completed - this is personal to your account
+5. **View Your Completions**: See all projects you've marked as completed
+
+### Key Features
+- ✅ **Authentication Required**: All project operations require login
+- ✅ **User-Specific Completion**: When you mark a project as completed, it only affects your view
+- ✅ **Project Ownership**: Each project tracks who created it
+- ✅ **Persistent Sessions**: JWT tokens are stored in localStorage for seamless experience
 
 ## 🔗 API Endpoints
 
-- `GET /api/projects` - Get all projects (with pagination)
-- `POST /api/projects` - Create a new project
-- `GET /api/projects/{id}` - Get project by ID
-- `PATCH /api/projects/{id}/status` - Update project status
-- `DELETE /api/projects/{id}` - Delete a project
+### Authentication (Public)
+- `POST /auth/signup` - Register a new user
+- `POST /auth/login` - Login and receive JWT token
+
+### Projects (Protected - Requires Authentication)
+- `GET /projects` - Get all projects with user-specific completion status
+- `POST /projects` - Create a new project (stores creator's user_id)
+- `GET /projects/{id}` - Get single project with user-specific completion status
+- `PATCH /projects/{id}/complete` - Mark project as completed for current user
+- `GET /projects/completed/me` - Get all projects marked as completed by current user
+
+### Response Format
+All project responses include:
+```json
+{
+  "id": "string",
+  "title": "string",
+  "description": "string",
+  "budget": number,
+  "tech_stack": ["string"],
+  "status": "OPEN" | "COMPLETED",
+  "created_by": "string (user_id)",
+  "created_at": "ISO datetime",
+  "isCompleted": boolean  // User-specific flag
+}
+```
 
 ## 🎨 Design Features
 
@@ -165,7 +204,10 @@ Freelance Project Marketplace/
 │   ├── src/
 │   │   ├── app/                  # Redux store configuration
 │   │   ├── components/           # Reusable UI components
-│   │   ├── features/             # Redux slices
+│   │   ├── config/               # API configuration with interceptors
+│   │   ├── features/
+│   │   │   ├── auth/             # Authentication slice
+│   │   │   └── projects/         # Projects slice
 │   │   ├── pages/                # Page components
 │   │   ├── App.jsx               # Main app component
 │   │   └── main.jsx              # Entry point
@@ -174,15 +216,69 @@ Freelance Project Marketplace/
 │
 └── server/                       # Backend FastAPI app
     ├── app/
+    │   ├── auth.py               # Authentication routes
     │   ├── config.py             # Configuration
-    │   ├── database.py           # Database connection
+    │   ├── database.py           # Database connection & schema
+    │   ├── dependencies.py       # Auth dependencies
+    │   ├── jwt_utils.py          # JWT token utilities
     │   ├── models.py             # Pydantic models
+    │   ├── schemas.py            # Request/Response schemas
     │   ├── services.py           # Business logic
-    │   ├── routes.py             # API routes
     │   └── main.py               # FastAPI app
     ├── requirements.txt          # Python dependencies
     └── run.py                    # Server entry point
 ```
+
+## 🗄️ MongoDB Schema
+
+### Collections
+
+#### users
+```javascript
+{
+  "_id": ObjectId,
+  "name": String,
+  "email": String,          // Unique index
+  "password_hash": String,  // Bcrypt hashed
+  "created_at": DateTime
+}
+```
+
+#### projects
+```javascript
+{
+  "_id": ObjectId,
+  "title": String,
+  "description": String,
+  "budget": Number,
+  "tech_stack": [String],
+  "status": "OPEN" | "COMPLETED",
+  "created_by": String,     // User ID reference
+  "created_at": DateTime
+}
+```
+
+#### project_completions
+```javascript
+{
+  "_id": ObjectId,
+  "user_id": String,        // Reference to users._id
+  "project_id": String,     // Reference to projects._id
+  "completed_at": DateTime
+}
+```
+
+**Indexes:**
+- `users.email` - Unique index for fast email lookup
+- `project_completions.(user_id, project_id)` - Compound unique index for completion tracking
+
+### Architecture Highlights
+
+**User-Specific Completion System:**
+- Projects have a global `status` field (OPEN/COMPLETED)
+- Each user has their own completion record in `project_completions`
+- When fetching projects, the backend joins with `project_completions` to set `isCompleted` flag per user
+- Multiple users can mark the same project as completed independently
 
 ## 🔧 Configuration
 

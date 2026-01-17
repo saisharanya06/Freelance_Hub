@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Projects from "./pages/Projects";
 import PostProject from "./pages/PostProject";
 import ProjectDetails from "./pages/ProjectDetails";
+import EditProject from "./pages/EditProject";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 
@@ -41,6 +42,14 @@ export default function App() {
           }
         />
         <Route path="/projects/:id" element={<ProjectDetails />} />
+        <Route
+          path="/projects/:id/edit"
+          element={
+            <ProtectedRoute>
+              <EditProject />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>

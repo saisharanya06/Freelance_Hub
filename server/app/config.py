@@ -1,12 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
+import os
 
-class Settings(BaseSettings):
-    mongodb_url: str
-    database_name: str
+load_dotenv()
 
-    model_config = SettingsConfigDict(
-        env_file="server/.env",
-        extra="ignore"
-    )
-
-settings = Settings()
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+ALGORITHM = "HS256"

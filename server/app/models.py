@@ -34,6 +34,7 @@ class ProjectStatusUpdate(BaseModel):
 
 class Project(ProjectBase):
     id: str
+    user_id: str                     # ⭐⭐⭐ ADD THIS LINE
     status: ProjectStatus = ProjectStatus.OPEN
     created_at: datetime
 

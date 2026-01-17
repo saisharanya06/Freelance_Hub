@@ -4,8 +4,7 @@ import projectReducer from "../features/projects/projectSlice";
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,        
-    projects: projectReducer
+    auth: authReducer,
+    projects: projectReducer,
   },
 });
-

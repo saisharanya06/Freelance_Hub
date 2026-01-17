@@ -1,35 +1,35 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../../config/api";
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/auth`;
+const API_URL = "/auth";
 
 /* ================== THUNKS ================== */
 
-// ✅ LOGIN
+// ------------------ LOGIN ------------------
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_URL}/login`, credentials);
-      return res.data; // { success, user }
+      const res = await api.post(`${API_URL}/login`, credentials);
+      return res.data; // { access_token, user }
     } catch (err) {
       return rejectWithValue(
-        err.response?.data?.detail || "Login failed, try again"
+        err.response?.data?.detail || "Login failed"
       );
     }
   }
 );
 
-// ✅ SIGNUP
+// ------------------ SIGNUP ------------------
 export const signupUser = createAsyncThunk(
   "auth/signupUser",
   async (formData, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_URL}/signup`, formData);
-      return res.data; // { success, user }
+      const res = await api.post(`${API_URL}/signup`, formData);
+      return res.data;
     } catch (err) {
       return rejectWithValue(
-        err.response?.data?.detail || "Signup failed, try again"
+        err.response?.data?.detail || "Signup failed"
       );
     }
   }
@@ -37,52 +37,69 @@ export const signupUser = createAsyncThunk(
 
 /* ================== SLICE ================== */
 
+// ✅ Restore session from localStorage (NOT sessionStorage)
+const storedAuth = localStorage.getItem("auth");
+const parsedAuth = storedAuth ? JSON.parse(storedAuth) : null;
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: null,
-    isAuthenticated: false,
-    status: "idle", // idle | loading | succeeded | failed
+    user: parsedAuth?.user || null,
+    accessToken: parsedAuth?.accessToken || null,
+    isAuthenticated: !!parsedAuth?.accessToken,
+    status: "idle",
     error: null,
   },
+
   reducers: {
     logoutUser: (state) => {
       state.user = null;
+      state.accessToken = null;
       state.isAuthenticated = false;
       state.status = "idle";
       state.error = null;
+
+      localStorage.removeItem("auth");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
   },
+
   extraReducers: (builder) => {
     builder
-      // LOGIN
-      .addCase(loginUser.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
+      // ✅ LOGIN SUCCESS
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
+        state.accessToken = action.payload.access_token;
         state.isAuthenticated = true;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
+
+        // 🔑 STORE CONSISTENTLY
+        localStorage.setItem(
+          "auth",
+          JSON.stringify({
+            user: action.payload.user,
+            accessToken: action.payload.access_token,
+          })
+        );
+
+        localStorage.setItem("token", action.payload.access_token);
+        localStorage.setItem(
+          "user",
+          JSON.stringify(action.payload.user)
+        );
       })
 
-      // SIGNUP
-      .addCase(signupUser.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
+      // ❌ LOGIN FAILED
+      .addCase(loginUser.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || "Login failed";
       })
-      .addCase(signupUser.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
-      })
+
+      // ❌ SIGNUP FAILED
       .addCase(signupUser.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload;
+        state.error = action.payload || "Signup failed";
       });
   },
 });
