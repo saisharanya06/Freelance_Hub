@@ -26,8 +26,8 @@ app = FastAPI(title="Freelance Projects API")
 # =====================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[""https://incredible-salamander-a39aca.netlify.app""],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
