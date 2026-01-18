@@ -11,9 +11,9 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// 🔥 Automatically attach token
+// 🔥 Automatically attach token from session storage
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

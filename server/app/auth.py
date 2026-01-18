@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from datetime import datetime
+from pydantic import BaseModel, EmailStr
 
 from .schemas import SignupSchema, LoginSchema
 from .database import users_collection

@@ -31,7 +31,8 @@ export default function Navbar({ theme, setTheme }) {
 
   /* ---------- THEME TOGGLE ---------- */
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
   };
 
   /* ---------- LOGOUT (FINAL FIX) ---------- */

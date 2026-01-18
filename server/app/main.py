@@ -39,8 +39,11 @@ app.add_middleware(
         "http://localhost",
         "http://127.0.0.1",
         # Render deployment
+        "https://freelance-hub-o2m8.onrender.com",
         "https://freelance-marketplace-web.onrender.com",
         "https://*.onrender.com",
+        # Netlify frontend (IMPORTANT)
+        "https://freelance-hub-b79837.netlify.app",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],

@@ -37,8 +37,8 @@ export const signupUser = createAsyncThunk(
 
 /* ================== SLICE ================== */
 
-// ✅ Restore session from localStorage (NOT sessionStorage)
-const storedAuth = localStorage.getItem("auth");
+// ✅ Restore session from sessionStorage (cleared when tab closes)
+const storedAuth = sessionStorage.getItem("auth");
 const parsedAuth = storedAuth ? JSON.parse(storedAuth) : null;
 
 const authSlice = createSlice({
@@ -59,9 +59,10 @@ const authSlice = createSlice({
       state.status = "idle";
       state.error = null;
 
-      localStorage.removeItem("auth");
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      // Clear all session storage
+      sessionStorage.removeItem("auth");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     },
   },
 
@@ -74,8 +75,8 @@ const authSlice = createSlice({
         state.accessToken = action.payload.access_token;
         state.isAuthenticated = true;
 
-        // 🔑 STORE CONSISTENTLY
-        localStorage.setItem(
+        // 🔑 STORE IN SESSION STORAGE (auto-clears when tab closes)
+        sessionStorage.setItem(
           "auth",
           JSON.stringify({
             user: action.payload.user,
@@ -83,8 +84,8 @@ const authSlice = createSlice({
           })
         );
 
-        localStorage.setItem("token", action.payload.access_token);
-        localStorage.setItem(
+        sessionStorage.setItem("token", action.payload.access_token);
+        sessionStorage.setItem(
           "user",
           JSON.stringify(action.payload.user)
         );
