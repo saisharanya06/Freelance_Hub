@@ -81,7 +81,7 @@ async def init_database():
             unique=True
         )
 
-        print("✅ MongoDB indexes created successfully")
+        print("MongoDB indexes created successfully")
 
     except Exception as e:
-        print(f"⚠️ Error creating MongoDB indexes: {e}")
+        print(f"Error creating MongoDB indexes: {e}")
