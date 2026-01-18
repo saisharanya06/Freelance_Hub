@@ -26,13 +26,10 @@ app = FastAPI(title="Freelance Projects API")
 # =====================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "*",  # Allow all origins for now (can be restricted later)
-    ],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
-    max_age=3600,
 )
 
 
