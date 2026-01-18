@@ -30,7 +30,7 @@ app.add_middleware(
         "*",  # Allow all origins for now (can be restricted later)
     ],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
     max_age=3600,
 )
