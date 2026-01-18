@@ -43,6 +43,7 @@ app.add_middleware(
         "https://freelance-marketplace-web.onrender.com",
         # Netlify frontend (IMPORTANT)
         "https://freelance-hub-b79837.netlify.app",
+        "https://incredible-salamander-a39aca.netlify.app",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
