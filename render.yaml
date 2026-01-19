@@ -1,0 +1,33 @@
+services:
+  # Backend API Service
+  - type: web
+    name: freelance-marketplace-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: cd server && pip install -r app/requirements.txt
+    startCommand: cd server && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URL
+        scope: run
+        value: ${MONGODB_URL}
+      - key: DATABASE_NAME
+        value: freelance_marketplace
+      - key: SECRET_KEY
+        value: ${SECRET_KEY}
+      - key: ALGORITHM
+        value: HS256
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  # Frontend Service (Static Site)
+  - type: static
+    name: freelance-marketplace-web
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: cd freelance-marketplace && npm install && npm run build
+    staticPublishPath: freelance-marketplace/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://freelance-marketplace-api.onrender.com
