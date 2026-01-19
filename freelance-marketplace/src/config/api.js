@@ -6,7 +6,7 @@ if (!API_BASE_URL) {
   throw new Error("VITE_API_URL not defined");
 }
 
-axios.create({
+const api = axios.create({
   baseURL: "https://freelance-hub-o2m8.onrender.com",
   withCredentials: true
 });
