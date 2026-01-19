@@ -33,10 +33,7 @@
 
 // export default api;
 
-
 import axios from "axios";
-import api from "../../config/api";
-
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -45,22 +42,23 @@ if (!API_BASE_URL) {
 }
 
 const api = axios.create({
-  baseURL: API_BASE_URL,   // ✅ USE ENV VAR
-  withCredentials: true,   // ✅ REQUIRED for cookies
+  baseURL: API_BASE_URL,   // ✅ use env
+  withCredentials: true,   // ✅ cookies support
 });
 
-// ❌ REMOVE Authorization header interceptor completely
-// Cookies are sent automatically by browser
+// ❌ NO Authorization header
+// ❌ NO sessionStorage token
+// Cookie auth only
 
 api.interceptors.response.use(
-  (res) => res,
-  (err) => {
+  (response) => response,
+  (error) => {
     console.error(
       "API Error:",
-      err.response?.status,
-      err.response?.data || err.message
+      error.response?.status,
+      error.response?.data || error.message
     );
-    return Promise.reject(err);
+    return Promise.reject(error);
   }
 );
 
