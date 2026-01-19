@@ -5,6 +5,7 @@ import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import { fetchProjects } from "../features/projects/projectSlice";
 import ProjectCard from "../components/ProjectCard";
 
+
 export default function Projects() {
   const dispatch = useDispatch();
 
