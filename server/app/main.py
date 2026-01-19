@@ -27,7 +27,8 @@ app = FastAPI(title="Freelance Projects API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://freelancehub-a39aca.netlify.app"],
+        "https://freelancehub-a39aca.netlify.app",
+        "https://696e5e0b09a04628e31098c4--freelancehub-a39aca.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
