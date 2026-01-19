@@ -16,7 +16,9 @@ import {
 } from "../features/projects/projectSlice";
 import Navbar from "../components/Navbar";
 import toast from "react-hot-toast";
-import api from "../config/api";
+// import api from "../config/api";
+import api from "../../config/api";
+
 
 const ProjectDetails = () => {
   const [completedNow, setCompletedNow] = useState(false); // ✅ MUST BE HERE
