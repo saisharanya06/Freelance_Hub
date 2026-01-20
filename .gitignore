@@ -30,6 +30,8 @@ dist/
 .env.development
 .env.production
 *.md
+.env
+.env.*
 
 # Python
 .venv/
