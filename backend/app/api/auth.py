@@ -104,9 +104,9 @@
 from fastapi import APIRouter, HTTPException, status, Response
 from datetime import datetime
 
-from .schemas import SignupSchema, LoginSchema
-from .database import users_collection
-from .jwt_utils import (
+from backend.app.schemas.schemas import SignupSchema, LoginSchema
+from database.connection import users_collection
+from backend.app.core.jwt_utils import (
     hash_password,
     verify_password,
     create_access_token

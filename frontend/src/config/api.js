@@ -43,7 +43,7 @@ if (!API_BASE_URL) {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,   // ✅ use env
-  withCredentials: false,
+  withCredentials: true,
      // ✅ cookies support
 });
 

@@ -1,8 +1,8 @@
 from typing import List, Optional
 from bson import ObjectId
 from datetime import datetime
-from .database import get_database
-from .models import ProjectCreate, ProjectUpdate, ProjectStatus, Project
+from database.connection import db as client_db
+from database.models import ProjectCreate, ProjectUpdate, ProjectStatus, Project
 
 
 class ProjectService:
@@ -14,17 +14,19 @@ class ProjectService:
             "title": project["title"],
             "description": project["description"],
             "budget": project["budget"],
-            "techStack": project["tech_stack"],
+            "techStack": project.get("tech_stack", []),
             "status": project["status"],
+            "created_by": str(project.get("created_by")),
             "created_at": project["created_at"],
         }
 
     @staticmethod
-    async def create_project(project: ProjectCreate) -> dict:
+    async def create_project(project: ProjectCreate, created_by: str) -> dict:
         """Create a new project"""
-        db = get_database()
+        db = client_db
         project_dict = project.model_dump()
         project_dict["status"] = ProjectStatus.OPEN
+        project_dict["created_by"] = ObjectId(created_by)
         project_dict["created_at"] = datetime.utcnow()
 
         result = await db.projects.insert_one(project_dict)
@@ -36,7 +38,7 @@ class ProjectService:
         skip: int = 0, limit: int = 100, status: Optional[str] = None
     ) -> List[dict]:
         """Get all projects with optional filtering and pagination"""
-        db = get_database()
+        db = client_db
         query = {}
         if status:
             query["status"] = status
@@ -50,7 +52,7 @@ class ProjectService:
     @staticmethod
     async def get_project_by_id(project_id: str) -> Optional[dict]:
         """Get a single project by ID"""
-        db = get_database()
+        db = client_db
         if not ObjectId.is_valid(project_id):
             return None
 
@@ -61,15 +63,19 @@ class ProjectService:
 
     @staticmethod
     async def update_project_status(
-        project_id: str, status: ProjectStatus
+        project_id: str, status: ProjectStatus, owner_id: str = None
     ) -> Optional[dict]:
         """Update project status"""
-        db = get_database()
+        db = client_db
         if not ObjectId.is_valid(project_id):
             return None
 
+        query = {"_id": ObjectId(project_id)}
+        if owner_id:
+            query["created_by"] = ObjectId(owner_id)
+
         result = await db.projects.find_one_and_update(
-            {"_id": ObjectId(project_id)},
+            query,
             {"$set": {"status": status}},
             return_document=True,
         )
@@ -80,10 +86,10 @@ class ProjectService:
 
     @staticmethod
     async def update_project(
-        project_id: str, project_update: ProjectUpdate
+        project_id: str, project_update: ProjectUpdate, owner_id: str = None
     ) -> Optional[dict]:
         """Update project details"""
-        db = get_database()
+        db = client_db
         if not ObjectId.is_valid(project_id):
             return None
 
@@ -94,8 +100,12 @@ class ProjectService:
         if not update_data:
             return await ProjectService.get_project_by_id(project_id)
 
+        query = {"_id": ObjectId(project_id)}
+        if owner_id:
+            query["created_by"] = ObjectId(owner_id)
+
         result = await db.projects.find_one_and_update(
-            {"_id": ObjectId(project_id)}, {"$set": update_data}, return_document=True
+            query, {"$set": update_data}, return_document=True
         )
 
         if result:
@@ -103,11 +113,15 @@ class ProjectService:
         return None
 
     @staticmethod
-    async def delete_project(project_id: str) -> bool:
+    async def delete_project(project_id: str, owner_id: str = None) -> bool:
         """Delete a project"""
-        db = get_database()
+        db = client_db
         if not ObjectId.is_valid(project_id):
             return False
 
-        result = await db.projects.delete_one({"_id": ObjectId(project_id)})
+        query = {"_id": ObjectId(project_id)}
+        if owner_id:
+            query["created_by"] = ObjectId(owner_id)
+
+        result = await db.projects.delete_one(query)
         return result.deleted_count > 0

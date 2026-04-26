@@ -1,13 +1,12 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
-from .models import ProjectCreate, ProjectStatusUpdate, Project
-from .services import ProjectService
-from app.database import project_completions
-from app.dependencies import get_current_user, get_current_user_optional
+from database.models import ProjectCreate, ProjectStatusUpdate, Project
+from backend.app.services.services import ProjectService
+from database.connection import project_completions
+from backend.app.core.dependencies import get_current_user, get_current_user_optional
 
-router = APIRouter(prefix="/api", tags=["projects"])
 router = APIRouter(tags=["projects"])
 
 
@@ -56,7 +55,7 @@ async def complete_project(
 # --------------------------------------------------
 # GET ALL PROJECTS (PUBLIC + OPTIONAL USER STATUS)
 # --------------------------------------------------
-@router.get("/projects")
+@router.get("/projects", response_model=List[Project])
 async def get_projects(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -75,7 +74,7 @@ async def get_projects(
             for project in projects:
                 found = await project_completions.find_one({
                     "user_id": current_user["id"],
-                    "project_id": str(project["_id"])
+                    "project_id": project["id"]
                 })
                 project["isCompleted"] = bool(found)
         else:
@@ -115,7 +114,7 @@ async def update_project_status(
     )
 
     if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail="Project not found or unauthorized")
 
     return project
 
@@ -134,6 +133,6 @@ async def delete_project(
     )
 
     if not success:
-        raise HTTPException(status_code=404, detail="Project not found")
+        raise HTTPException(status_code=404, detail="Project not found or unauthorized")
 
     return {"message": "Project deleted successfully"}

@@ -6,17 +6,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from bson import ObjectId
 
-from .database import (
+from database.connection import (
     projects_collection,
     project_completions,
     init_database,
 )
-from .schemas import ProjectCreate, ProjectUpdate, ProjectResponse
-from .dependencies import (
+from backend.app.schemas.schemas import ProjectCreate, ProjectUpdate, ProjectResponse
+from backend.app.core.dependencies import (
     get_current_user,
     get_current_user_optional,
 )
-from .auth import router as auth_router
+from backend.app.api.auth import router as auth_router
 
 app = FastAPI(title="Freelance Projects API")
 
@@ -29,7 +29,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "https://freelancehub-a39aca.netlify.app"],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
