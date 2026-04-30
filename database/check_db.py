@@ -11,7 +11,7 @@ async def check_database():
     
     # Count projects
     count = await db.projects.count_documents({})
-    print(f'\n✅ Total projects in database: {count}\n')
+    print(f'\nTotal projects in database: {count}\n')
     
     # List all projects
     if count > 0:
@@ -23,7 +23,7 @@ async def check_database():
             print(f"    Tech: {p.get('tech_stack', [])}")
             print()
     else:
-        print('❌ No projects found in database!')
+        print('No projects found in database!')
     
     client.close()
 

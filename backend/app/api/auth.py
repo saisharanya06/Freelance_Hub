@@ -150,17 +150,19 @@ async def signup(data: SignupSchema, response: Response):
     )
 
     # 🔥 SET COOKIE (AUTO LOGIN AFTER SIGNUP)
+    # Note: secure=False and samesite="Lax" for local development
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,      # REQUIRED (Render HTTPS)
-        samesite="None"   # REQUIRED (Netlify ↔ Render)
+        secure=False,     # Changed for localhost
+        samesite="Lax"    # Changed for localhost
     )
 
     return {
         "success": True,
         "message": "User created successfully",
+        "access_token": access_token, # Added to JSON for frontend
         "user": {
             "id": str(result.inserted_id),
             "name": data.name,
@@ -174,6 +176,7 @@ async def signup(data: SignupSchema, response: Response):
 # =====================================================
 @router.post("/login")
 async def login(data: LoginSchema, response: Response):
+    print(f"DEBUG: Login attempt for email: {data.email}")
     user = await users_collection.find_one({"email": data.email})
     if not user:
         raise HTTPException(
@@ -196,17 +199,19 @@ async def login(data: LoginSchema, response: Response):
     )
 
     # 🔥 SET COOKIE (THIS FIXES EVERYTHING)
+    # Note: secure=False and samesite="Lax" for local development
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,      # REQUIRED (Render HTTPS)
-        samesite="None"   # REQUIRED (Netlify ↔ Render)
+        secure=False,     # Changed for localhost
+        samesite="Lax"    # Changed for localhost
     )
 
     return {
         "success": True,
         "message": "Login successful",
+        "access_token": access_token, # Added to JSON for frontend
         "user": {
             "id": str(user["_id"]),
             "name": user["name"],
