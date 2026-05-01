@@ -7,8 +7,8 @@ load_dotenv()
 # --------------------------------------------------
 # Environment Variables
 # --------------------------------------------------
-MONGO_URL = os.getenv("MONGODB_URL")
-DATABASE_NAME = os.getenv("DATABASE_NAME")
+MONGO_URL = os.getenv("MONGODB_URL", "").strip()
+DATABASE_NAME = os.getenv("DATABASE_NAME", "").strip()
 
 if not MONGO_URL or not DATABASE_NAME:
     raise RuntimeError("MongoDB environment variables not set")
