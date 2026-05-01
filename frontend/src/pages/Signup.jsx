@@ -3,12 +3,17 @@ import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
-import { signupUser } from "../features/auth/authSlice";
+import { signupUser, clearError } from "../features/auth/authSlice";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 
 export default function Signup() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const [formData, setFormData] = useState({
     name: "",

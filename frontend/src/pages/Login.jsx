@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../features/auth/authSlice";
+import { loginUser, clearError } from "../features/auth/authSlice";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,8 +18,9 @@ export default function Login() {
   );
 
   useEffect(() => {
+    dispatch(clearError());
     if (isAuthenticated) navigate("/");
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, dispatch]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

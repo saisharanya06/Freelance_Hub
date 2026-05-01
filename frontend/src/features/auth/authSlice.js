@@ -65,6 +65,10 @@ const authSlice = createSlice({
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
     },
+    clearError: (state) => {
+      state.error = null;
+      state.status = "idle";
+    },
   },
 
   extraReducers: (builder) => {
@@ -106,5 +110,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logoutUser } = authSlice.actions;
+export const { logoutUser, clearError } = authSlice.actions;
 export default authSlice.reducer;
