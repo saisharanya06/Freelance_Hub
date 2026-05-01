@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Response
 from datetime import datetime
+import os
 
 from backend.app.schemas.schemas import SignupSchema, LoginSchema
 from database.connection import users_collection
@@ -47,13 +48,13 @@ async def signup(data: SignupSchema, response: Response):
     )
 
     # 🔥 SET COOKIE (AUTO LOGIN AFTER SIGNUP)
-    # Note: secure=False and samesite="Lax" for local development
+    is_prod = os.getenv("RENDER") is not None
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,     # Changed for localhost
-        samesite="Lax"    # Changed for localhost
+        secure=is_prod,
+        samesite="None" if is_prod else "Lax"
     )
 
     return {
@@ -96,13 +97,13 @@ async def login(data: LoginSchema, response: Response):
     )
 
     # 🔥 SET COOKIE (THIS FIXES EVERYTHING)
-    # Note: secure=False and samesite="Lax" for local development
+    is_prod = os.getenv("RENDER") is not None
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,     # Changed for localhost
-        samesite="Lax"    # Changed for localhost
+        secure=is_prod,
+        samesite="None" if is_prod else "Lax"
     )
 
     return {
