@@ -1,11 +1,8 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from typing import Optional
 from backend.app.core.config import SECRET_KEY, ALGORITHM
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT Configuration
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
@@ -13,12 +10,17 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
 def hash_password(password: str) -> str:
     # bcrypt max 72 bytes safety
-    safe_password = password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
-    return pwd_context.hash(safe_password)
+    safe_password = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(safe_password, salt)
+    return hashed.decode("utf-8")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    safe_password = plain_password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
-    return pwd_context.verify(safe_password, hashed_password)
+    safe_password = plain_password.encode("utf-8")[:72]
+    try:
+        return bcrypt.checkpw(safe_password, hashed_password.encode("utf-8"))
+    except ValueError:
+        return False
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
